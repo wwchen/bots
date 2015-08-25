@@ -1,0 +1,2 @@
+jira >= 0.50
+slackclient >= 0.15
