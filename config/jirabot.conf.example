@@ -1,0 +1,7 @@
+[Slack]
+api token = xxx
+
+[JIRA]
+hostname = https://jira.atlassian.net/
+username = user
+password = pass
