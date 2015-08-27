@@ -18,10 +18,11 @@ def remove_slack_user_markup(text, users):
         user_id = match.group('user_id')
         name = match.group('name')
         markup = match.group('markup')
-        print "matched", user_id, name, markup
+        substring = match.group(0)
+
+        text = text.replace(substring, '').strip()
         for user in users:
             if user.id == user_id:
-                text = text.replace(match.group(0), '').strip()
                 return text, user
     return text, None
 
@@ -37,11 +38,13 @@ class SlackUser:
 
         if 'is_bot' in json:
             self.is_bot = json['is_bot']
-        else:
+
+        if 'profile' in json and 'email' in json['profile']:
             self.email = json['profile']['email']
 
     def is_user(self):
+        # return True
         return not self.deleted and not self.is_bot
 
     def __str__(self):
-        return '<@{}|{}>: {}'.format(self.id, self.name, self.email)
+        return '<@{}|{}|{}>'.format(self.id, self.name, self.email)

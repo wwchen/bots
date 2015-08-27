@@ -25,13 +25,15 @@ class IssueType(Enum):
 
 
 class Issue:
-    def __init__(self, title, description=''):
+    def __init__(self, title, description='', assignee=None):
         result = _classify(title)
-        print result
         assert result[0] != IssueType.Unknown
         self.text = result[1]
         self.type = result[0]
         self.summary = description
+        self.assignee = assignee
 
     def __str__(self):
-        return '<{}> *{}* {}'.format(self.type.name, self.text, self.summary)
+        if self.assignee:
+            return '({}\'s {} *{}* {})'.format(self.assignee, self.type.name, self.text, self.summary)
+        return '({} *{}* {})'.format(self.assignee, self.type.name, self.text, self.summary)
