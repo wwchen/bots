@@ -6,6 +6,8 @@ import ConfigParser
 from jira import JIRA
 import re
 from slackclient import SlackClient
+from JiraIssue import *
+
 
 class JiraBot:
     CONFIG_KEY_SLACK = "Slack"
@@ -32,12 +34,12 @@ class JiraBot:
             print "Connected to Slack"
             while True:
                 events = client.rtm_read()
-                for bug in self._parse_events(events):
+                for issue in self._parse_events(events):
                     jira.create_issue(fields={
                         'project': {'key': 'SNOW'},
-                        'summary': bug.text,
-                        'description': bug.summary,
-                        'issuetype': {'name': 'Bug' if bug.type == "bug" else "Task"}
+                        'summary': issue.text,
+                        'description': issue.summary,
+                        'issuetype': {'name': issue.type.name}
                     })
                     # 'attachment': [{
                     #     'value': base64.b64encode(open('../file.jpg').read())
@@ -53,7 +55,7 @@ class JiraBot:
 
         print events
 
-        bugs = []
+        issues = []
         for event in events:
             if "type" in event and "message" == event["type"]:
                 if "user" not in event or "text" not in event:
@@ -70,36 +72,15 @@ class JiraBot:
                     pass
 
                 # determine if the text is a bug
+                if is_issue(text):
+                    issue = Issue(text, summary)
+                    issues.append(issue)
 
-                is_bug =  text.lower().strip().startswith('bug:')
-                is_task = text.lower().strip().startswith('task:')
-                if is_bug or is_task:
-                    bug = Bug()
-                    bug.user = user
-                    bug.text = re.sub(r'^(bug|task):', '', text.strip()).strip()
-                    bug.summary = summary
-                    bug.type = "bug" if is_bug else "task"  # todo refactor
-                    bugs.append(bug)
-
-        if bugs:
-            print bugs
-        return bugs
-
-
-class Bug:
-    def __init__(self):
-        self.text = ""
-        self.summary = ""
-        self.user = ""
-        self.type = "bug"
-        self.types = ["bug", "task"]
-        pass
-
-    def __str__(self):
-        return self.text, ":", self.summary
+        if issues:
+            print issues
+        return issues
 
 
 if __name__ == '__main__':
     bot = JiraBot("../config/jirabot.conf")
     bot.start()
-    print "here"
