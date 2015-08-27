@@ -4,6 +4,7 @@ import base64
 import time
 import ConfigParser
 from jira import JIRA
+import re
 from slackclient import SlackClient
 
 class JiraBot:
@@ -36,7 +37,7 @@ class JiraBot:
                         'project': {'key': 'SNOW'},
                         'summary': bug.text,
                         'description': bug.summary,
-                        'issuetype': {'name': 'Bug'}
+                        'issuetype': {'name': 'Bug' if bug.type == "bug" else "Task"}
                     })
                     # 'attachment': [{
                     #     'value': base64.b64encode(open('../file.jpg').read())
@@ -54,7 +55,9 @@ class JiraBot:
 
         bugs = []
         for event in events:
-            if "message" == event["type"]:
+            if "type" in event and "message" == event["type"]:
+                if "user" not in event or "text" not in event:
+                    continue
                 user = event["user"]
                 text = event["text"]
                 summary = ""
@@ -67,11 +70,15 @@ class JiraBot:
                     pass
 
                 # determine if the text is a bug
-                if text.lower().startswith('bug:'):
+
+                is_bug =  text.lower().strip().startswith('bug:')
+                is_task = text.lower().strip().startswith('task:')
+                if is_bug or is_task:
                     bug = Bug()
                     bug.user = user
-                    bug.text = text.replace('bug:', '').strip()
+                    bug.text = re.sub(r'^(bug|task):', '', text.strip()).strip()
                     bug.summary = summary
+                    bug.type = "bug" if is_bug else "task"  # todo refactor
                     bugs.append(bug)
 
         if bugs:
@@ -84,6 +91,8 @@ class Bug:
         self.text = ""
         self.summary = ""
         self.user = ""
+        self.type = "bug"
+        self.types = ["bug", "task"]
         pass
 
     def __str__(self):
