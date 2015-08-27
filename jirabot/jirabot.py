@@ -5,6 +5,7 @@ import ConfigParser
 from jira import JIRA
 from slackclient import SlackClient
 from JiraIssue import *
+from SlackUser import *
 
 
 class JiraBot:
@@ -19,6 +20,7 @@ class JiraBot:
         self._jira_hostname = config.get(self.CONFIG_KEY_JIRA, "hostname")
         self._jira_username = config.get(self.CONFIG_KEY_JIRA, "username")
         self._jira_password = config.get(self.CONFIG_KEY_JIRA, "password")
+        self._slack_users = []
 
     def start(self):
         # connect to jira
@@ -27,6 +29,8 @@ class JiraBot:
 
         # connect to slack
         slack = SlackClient(self._slack_api_token)
+        self._slack_users = fetch_slack_users(slack)
+        # print [str(m) for m in self._slack_users]
 
         if slack.rtm_connect():
             print "Connected to Slack"
@@ -36,6 +40,7 @@ class JiraBot:
                     print event
                     issue = self._parse_event(event)
                     if issue:
+                        # self._parse_slack_user(issue, self._slack_users)
                         jira.create_issue(fields={
                             'project': {'key': 'SNOW'},
                             'summary': issue.text,
@@ -65,10 +70,21 @@ class JiraBot:
             text = event["file"]["title"]
             summary = event["file"]["url_private"]
 
+        # determine if the text highlighted someone on slack
+        text, slack_user = remove_slack_user_markup(text, self._slack_users)
+        if slack_user:
+            print "Slack user found: {}".format(slack_user)
+            print "Text:", text
+
         # determine if the text is a bug
         if is_issue(text):
             return Issue(text, summary)
 
+    def _parse_slack_user(self, issue, slack_users):
+        slack_user, substring = remove_slack_user_markup(issue.text, slack_users)
+        if slack_user:
+            # todo mapping
+            issue.text = issue.text.replace(substring, '')
 
 
 if __name__ == '__main__':
