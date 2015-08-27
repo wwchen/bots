@@ -34,4 +34,4 @@ class Issue:
         self.summary = description
 
     def __str__(self):
-        return str.format('<{}> *{}* {}', self.type.name, self.text, self.summary)
+        return '<{}> *{}* {}'.format(self.type.name, self.text, self.summary)

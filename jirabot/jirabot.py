@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-import base64
 
 import time
 import ConfigParser
 from jira import JIRA
-import re
 from slackclient import SlackClient
 from JiraIssue import *
 
@@ -14,7 +12,6 @@ class JiraBot:
     CONFIG_KEY_JIRA = "JIRA"
 
     # todo get user info, map to jira
-    #
     def __init__(self, config_file):
         config = ConfigParser.ConfigParser()
         config.read(config_file)
@@ -29,56 +26,49 @@ class JiraBot:
         print "Connected to Jira"
 
         # connect to slack
-        client = SlackClient(self._slack_api_token)
-        if client.rtm_connect():
+        slack = SlackClient(self._slack_api_token)
+
+        if slack.rtm_connect():
             print "Connected to Slack"
             while True:
-                events = client.rtm_read()
-                for issue in self._parse_events(events):
-                    jira.create_issue(fields={
-                        'project': {'key': 'SNOW'},
-                        'summary': issue.text,
-                        'description': issue.summary,
-                        'issuetype': {'name': issue.type.name}
-                    })
-                    # 'attachment': [{
-                    #     'value': base64.b64encode(open('../file.jpg').read())
-                    # }]
-
+                events = slack.rtm_read()
+                for event in events:
+                    print event
+                    issue = self._parse_event(event)
+                    if issue:
+                        jira.create_issue(fields={
+                            'project': {'key': 'SNOW'},
+                            'summary': issue.text,
+                            'description': issue.summary,
+                            'issuetype': {'name': issue.type.name}
+                        })
                 time.sleep(1)
         else:
             print "Connection failed. Invalid API token?"
 
-    def _parse_events(self, events):
-        if not events:
-            return []
+    def _parse_event(self, event):
+        if 'type' not in event or \
+                'user' not in event or \
+                'text' not in event:
+            return None
 
-        print events
+        if 'message' != event['type']:
+            return None
 
-        issues = []
-        for event in events:
-            if "type" in event and "message" == event["type"]:
-                if "user" not in event or "text" not in event:
-                    continue
-                user = event["user"]
-                text = event["text"]
-                summary = ""
-                file_shared = "file_share" == event["subtype"] if "subtype" in event else None
-                if file_shared:
-                    # https://api.slack.com/types/file
-                    # todo do something with the attached file
-                    text = event["file"]["title"]
-                    summary = event["file"]["url_private"]
-                    pass
+        user = event["user"]
+        text = event["text"]
+        summary = ""
 
-                # determine if the text is a bug
-                if is_issue(text):
-                    issue = Issue(text, summary)
-                    issues.append(issue)
+        file_shared = "file_share" == event["subtype"] if "subtype" in event else None
+        if file_shared:
+            # https://api.slack.com/types/file
+            text = event["file"]["title"]
+            summary = event["file"]["url_private"]
 
-        if issues:
-            print issues
-        return issues
+        # determine if the text is a bug
+        if is_issue(text):
+            return Issue(text, summary)
+
 
 
 if __name__ == '__main__':
