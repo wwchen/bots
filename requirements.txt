@@ -1,2 +1,3 @@
 jira >= 0.50
 slackclient >= 0.15
+enum34 >= 1.0.4
