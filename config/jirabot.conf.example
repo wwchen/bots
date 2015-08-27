@@ -5,3 +5,4 @@ api token = xxx
 hostname = https://jira.atlassian.net/
 username = user
 password = pass
+project = PROJ
