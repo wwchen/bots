@@ -2,7 +2,7 @@
 
 import time
 import ConfigParser
-from jira import JIRA
+from jira import JIRA, JIRAError
 from slackclient import SlackClient
 from JiraIssue import *
 from SlackUser import *
@@ -99,4 +99,11 @@ class JiraBot:
 
 if __name__ == '__main__':
     bot = JiraBot("../config/jirabot.conf")
-    bot.start()
+    while True:
+        try:
+            bot.start()
+        except JIRAError as e:
+            print "Restarting because of error: " + e
+        except KeyboardInterrupt:
+            print "Caught keyboard interrupt. Exiting"
+            break
