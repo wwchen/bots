@@ -93,7 +93,7 @@ class JiraBot:
         # determine if the text is a bug
         if is_issue(text):
             issue = Issue(text, summary, assignee)
-            print issue
+            print unicode(issue)  # todo makes no sense why I need to force cast it to unicode to print
             print "========"
             return issue
         print "========"

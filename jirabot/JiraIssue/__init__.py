@@ -36,4 +36,4 @@ class Issue:
     def __str__(self):
         if self.assignee:
             return u'({}\'s {} *{}* {})'.format(self.assignee, self.type.name, self.text, self.summary)
-        return u'({} *{}* {})'.format(self.assignee, self.type.name, self.text, self.summary)
+        return u'({} *{}* {})'.format(self.type.name, self.text, self.summary)
