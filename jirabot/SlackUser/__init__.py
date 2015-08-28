@@ -47,4 +47,4 @@ class SlackUser:
         return not self.deleted and not self.is_bot
 
     def __str__(self):
-        return '<@{}|{}|{}>'.format(self.id, self.name, self.email)
+        return u'<@{}|{}|{}>'.format(self.id, self.name, self.email)

@@ -67,6 +67,7 @@ class JiraBot:
 
         print "========"
 
+        # todo need to normalize/sanitize input data
         user = event["user"]
         text = event["text"]
         summary = ""
@@ -104,6 +105,8 @@ if __name__ == '__main__':
             bot.start()
         except JIRAError as e:
             print "Restarting because of error: " + e
+        except UnicodeEncodeError as e:
+            print "Submitting the bug failed: " + e
         except KeyboardInterrupt:
             print "Caught keyboard interrupt. Exiting"
             break

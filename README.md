@@ -14,3 +14,8 @@ Installation
 - Fill in the required info
 - run `jirabot.py`
 
+TODO
+===
+- DM user when bug is submitted, or if there was an error
+- Protect app against errors
+- Sanitize data input
