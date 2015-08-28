@@ -104,9 +104,9 @@ if __name__ == '__main__':
         try:
             bot.start()
         except JIRAError as e:
-            print "Restarting because of error: " + e
+            print "Restarting because of error: " + str(e)
         except UnicodeEncodeError as e:
-            print "Submitting the bug failed: " + e
+            print "Submitting the bug failed: " + str(e)
         except KeyboardInterrupt:
             print "Caught keyboard interrupt. Exiting"
             break
