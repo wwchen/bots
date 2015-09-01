@@ -19,8 +19,8 @@ def is_issue(text):
 
 @unique
 class IssueType(Enum):
-    Bug = '^bug[ :-]\s*'
-    Task = '^task[ :-]\s*'
+    Bug = '(?i)^bug[ :-]\s*'
+    Task = '(?i)^task[ :-]\s*'
     Unknown = ''
 
 
